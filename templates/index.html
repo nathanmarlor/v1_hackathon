@@ -18,7 +18,15 @@
         }
 
         .device-button {
+          background-color: grey;
+            height: 50px;
             margin: 10px;
+            opacity: 0.3;
+        }
+
+        .device-button.active {
+            background-color: green;
+            opacity: 1;
         }
     </style>
 </head>
@@ -107,7 +115,7 @@
             const button = document.createElement('button');
             button.textContent = device;
             button.classList.add('btn', 'device-button', 'btn-primary', 'm-2'); // Bootstrap classes
-
+            button.id = `button-${device}`;
             button.addEventListener('click', () => {
                 toggleDevice(device);
             });
@@ -186,8 +194,8 @@
 
         // Toggle device on/off
         function toggleDevice(device) {
-            const icon = document.getElementById(`icon-${device}`);
-            const isOn = icon.classList.contains('active');
+            const button = document.getElementById(`button-${device}`);
+            const isOn = button.classList.contains('active');
 
             const url = isOn ? `http://localhost:5000/devices/${device}/off` : `http://localhost:5000/devices/${device}/on`;
             const method = isOn ? 'GET' : 'GET';
@@ -195,7 +203,7 @@
             fetch(url, { method })
                 .then(response => {
                     if (response.ok) {
-                        icon.classList.toggle('active');
+                        button.classList.toggle('active');
                     } else {
                         console.error(`Error toggling device ${device}`);
                     }
