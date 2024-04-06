@@ -13,13 +13,18 @@
             opacity: 0.5;
         }
 
-        .device-icon.active {
-            opacity: 1;
-        }
+            .device-icon.active {
+                opacity: 1;
+            }
 
         .device-button {
             margin: 10px;
         }
+
+        .hidden {
+            display: none;
+        }
+    </style>
     </style>
 </head>
 <body>
@@ -49,7 +54,7 @@
             </div>
         </div>
         <!-- Detected Devices Section -->
-        <div class="col-md-6" id="device-info">
+        <div class="col-md-6 hidden" id="device-info">
             <div class="card" id="detected-device-card">
                 <div class="card-body">
                     <h5 class="card-title">AI Detected Devices</h5>
@@ -121,7 +126,8 @@
                 type: 'line',
                 data: chartData,
                 options: {
-                    responsive: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     title: {
                         display: true,
                         text: 'Combined Power Usage'

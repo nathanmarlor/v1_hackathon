@@ -1,8 +1,3 @@
-#device-info {
-    height: 20vh; /* 20% of the viewport height */
-}
-
-
 #power-chart-section {
     height: 50vh; /* Adjust this value as needed */
     overflow: visible; /* Allows the chart to exceed the section height if necessary */
@@ -18,18 +13,14 @@
 
 #device-info {
     height: auto; /* Adjust this value as needed */
-    overflow: auto; /* This will allow the div to expand vertically as needed */
+    overflow: auto; /* This will allow the div to expand vertically as needed */ 
 }
 
 #power-chart-section,
 #device-controls {
     overflow: auto; /* add scrollbars if the content overflows */
 }
-
-.hidden {
-    display: none;
-}
-
+ 
 .row {
     display: flex;
     flex-wrap: wrap;
