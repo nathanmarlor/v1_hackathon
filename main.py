@@ -1,73 +1,98 @@
 import time
 from flask import Flask, jsonify, request
-
+import pickle
+import random
 app = Flask(__name__)
 
 # Define the devices and their fixed power usage
 devices = {
-    'Light': 5,
-    'Fridge': 50,
-    'TV': 100,
-    'Oven': 1500
+    'Light': random.uniform(20,30),
+    'Fridge': random.uniform(50,55),
+    'TV': random.uniform(500,505),
+    'Oven': random.uniform(2000,2005)
 }
 
 # Global variables
 switched_on = []
 combined_load_history = []
 detected_devices_history = []
+# Load the trained model from the file
+with open('model_new.pkl', 'rb') as f:
+    model = pickle.load(f)
+# # Simulated ML model for device detection
+# def detect_devices(combined_load):
+#     detected = []
+#     remaining_load = combined_load
 
-# Simulated ML model for device detection
-def detect_devices(combined_load):
-    detected = []
-    remaining_load = combined_load
+#     # Sort devices by power in descending order
+#     sorted_devices = sorted(devices.items(), key=lambda x: x[1], reverse=True)
 
-    # Sort devices by power in descending order
-    sorted_devices = sorted(devices.items(), key=lambda x: x[1], reverse=True)
+#     for device, power in sorted_devices:
+#         if power <= remaining_load:
+#             detected.append(device)
+#             remaining_load -= power
 
-    for device, power in sorted_devices:
-        if power <= remaining_load:
-            detected.append(device)
-            remaining_load -= power
+#     return detected
 
-    return detected
+def detect_devices(combined_load, power_change):
+    # Prepare the input data
+    input_data = [[combined_load, power_change]]
+    
+    # Use the model to predict the device states
+    predicted_label = model.predict(input_data)[0]
+    
+    # Convert the predicted label to a list of devices
+    detected_devices = [device for device, state in zip(devices, predicted_label) if state == '1']
+    
+    return detected_devices
 
 # API endpoint to get the current state
 @app.route('/state', methods=['GET'])
 def get_state():
-    return jsonify({
+    response =  jsonify({
         'combined_load': combined_load_history[-1] if combined_load_history else 0,
         'switched_on_devices': switched_on,
         'detected_devices': detected_devices_history[-1] if detected_devices_history else []
     })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 # API endpoint to turn a device on
-@app.route('/devices/<device>/on', methods=['POST'])
+@app.route('/devices/<device>/on', methods=['POST','GET'])
 def turn_device_on(device):
     if device in devices:
         if device not in switched_on:
             switched_on.append(device)
-        return jsonify({'message': f'{device} turned on'})
+        
+        response = jsonify({'message': f'{device} turned on'})
     else:
-        return jsonify({'message': 'Device not found'}), 404
+        response= jsonify({'message': 'Device not found'}), 404
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 # API endpoint to turn a device off
-@app.route('/devices/<device>/off', methods=['POST'])
+@app.route('/devices/<device>/off', methods=['POST','GET'])
 def turn_device_off(device):
     if device in devices:
         if device in switched_on:
             switched_on.remove(device)
-        return jsonify({'message': f'{device} turned off'})
+        response= jsonify({'message': f'{device} turned off'})
     else:
-        return jsonify({'message': 'Device not found'}), 404
+        response= jsonify({'message': 'Device not found'}), 404
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 # Simulation loop
 def simulation_loop():
+    prev_load = 0
     while True:
         # Calculate combined load
         combined_load = sum(devices[device] for device in switched_on)
+        # Calculate power change
+        power_change = combined_load - prev_load
+        prev_load = combined_load
 
-        # Detect devices using the simulated ML model
-        detected_devices = detect_devices(combined_load)
+        detected_devices = detect_devices(combined_load, power_change)
 
         # Store the current combined load and detected devices
         combined_load_history.append(combined_load)

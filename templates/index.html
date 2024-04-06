@@ -135,7 +135,7 @@
       const icon = document.getElementById(`icon-${device}`);
       const isOn = icon.classList.contains('active');
 
-      const url = isOn ? `http://localhost:5000/devices/${device}/off` : `http://localhost:5000/devices/${device}/on`;
+      const url = isOn ? `http://127.0.0:5000/devices/${device}/off` : `http://localhost:5000/devices/${device}/on`;
       const method = isOn ? 'GET' : 'GET';
 
       fetch(url, { method })
