@@ -6,10 +6,10 @@ app = Flask(__name__)
 
 # Define the devices and their fixed power usage
 devices = {
-    'Light': random.uniform(20,30),
-    'Fridge': random.uniform(50,55),
-    'TV': random.uniform(500,505),
-    'Oven': random.uniform(2000,2005)
+    'Light': random.uniform(30,40),
+    'Fridge': random.uniform(150,170),
+    'TV': random.uniform(500,529),
+    'Oven': random.uniform(2000,2029)
 }
 
 # Global variables
