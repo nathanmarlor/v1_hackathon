@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Device Power Usage</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .device-icon {
+      width: 50px;
+      height: 50px;
+      margin: 10px;
+      opacity: 0.5;
+    }
+    .device-icon.active {
+      opacity: 1;
+    }
+    .device-button {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="device-icons"></div>
+  <canvas id="power-chart"></canvas>
+  <div id="device-buttons"></div>
+
+  <script>
+    const devices = ['Light', 'Fridge', 'TV', 'Oven'];
+    const chartData = {
+      labels: [],
+      datasets: [{
+        label: 'Combined Power Usage (Watts)',
+        data: [],
+        borderColor: 'blue',
+        fill: false
+      }]
+    };
+
+    let chart;
+
+    // Create device icons
+    const deviceIconsContainer = document.getElementById('device-icons');
+    devices.forEach(device => {
+      const icon = document.createElement('img');
+      icon.src = `${device.toLowerCase()}.png`;
+      icon.alt = device;
+      icon.classList.add('device-icon');
+      icon.id = `icon-${device}`;
+      deviceIconsContainer.appendChild(icon);
+    });
+
+    // Create device buttons
+    const deviceButtonsContainer = document.getElementById('device-buttons');
+    devices.forEach(device => {
+      const button = document.createElement('button');
+      button.textContent = device;
+      button.classList.add('device-button');
+      button.addEventListener('click', () => {
+        toggleDevice(device);
+      });
+      deviceButtonsContainer.appendChild(button);
+    });
+
+    // Initialize chart
+    window.onload = function() {
+      const ctx = document.getElementById('power-chart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+          responsive: true,
+          title: {
+            display: true,
+            text: 'Combined Power Usage'
+          },
+          scales: {
+            xAxes: [{
+              display: true,
+              scaleLabel: {
+                display: true,
+                labelString: 'Time (seconds)'
+              }
+            }],
+            yAxes: [{
+              display: true,
+              scaleLabel: {
+                display: true,
+                labelString: 'Power (Watts)'
+              }
+            }]
+          }
+        }
+      });
+      fetchData();
+      setInterval(fetchData, 1000);
+    };
+
+    // Fetch data from the server
+    function fetchData() {
+      fetch('http://localhost:5000/state')
+        .then(response => response.json())
+        .then(data => {
+          updateChart(data.combined_load);
+          updateDetectedDevices(data.detected_devices);
+        });
+    }
+
+    // Update chart with new data
+    function updateChart(combinedLoad) {
+      const currentTime = new Date().getSeconds();
+      chartData.labels.push(currentTime);
+      chartData.datasets[0].data.push(combinedLoad);
+
+      if (chartData.labels.length > 30) {
+        chartData.labels.shift();
+        chartData.datasets[0].data.shift();
+      }
+
+      chart.update();
+    }
+
+    // Update detected devices
+    function updateDetectedDevices(detectedDevices) {
+      devices.forEach(device => {
+        const icon = document.getElementById(`icon-${device}`);
+        if (detectedDevices.includes(device)) {
+          icon.classList.add('active');
+        } else {
+          icon.classList.remove('active');
+        }
+      });
+    }
+
+    // Toggle device on/off
+    function toggleDevice(device) {
+      const icon = document.getElementById(`icon-${device}`);
+      const isOn = icon.classList.contains('active');
+
+      const url = isOn ? `http://localhost:5000/devices/${device}/off` : `http://localhost:5000/devices/${device}/on`;
+      const method = isOn ? 'GET' : 'GET';
+
+      fetch(url, { method })
+        .then(response => {
+          if (response.ok) {
+            icon.classList.toggle('active');
+          } else {
+            console.error(`Error toggling device ${device}`);
+          }
+        })
+        .catch(error => {
+          console.error(`Error toggling device ${device}:`, error);
+        });
+    }
+  </script>
+</body>
+</html>
