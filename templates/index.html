@@ -163,6 +163,7 @@
                 .then(data => {
                     updateChart(data.combined_load);
                     updateDetectedDevices(data.detected_devices);
+                    updateDetectedDevicesbtn(data.detected_devices);
                 });
         }
 
@@ -192,6 +193,17 @@
             });
         }
 
+        // Update detected devices
+        function updateDetectedDevicesbtn(detectedDevices) {
+            devices.forEach(device => {
+                const button = document.getElementById(`button-${device}`);
+                if (detectedDevices.includes(device)) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
         // Toggle device on/off
         function toggleDevice(device) {
             const button = document.getElementById(`button-${device}`);
