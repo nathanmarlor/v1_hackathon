@@ -38,36 +38,38 @@
     </nav>
     <!-- Row for Detected Devices and Control Devices -->
     <div class="row" style="margin: 20px;">
-        <div class="col-12 text-center">
-            <button id="show-devices" class="btn btn-primary">Show Detected Devices</button>
-        </div>
         <!-- Device Controls Section -->
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-md-6" id="our-devices">
+            <div class="card" id="our-devices-card">
                 <div class="card-body">
                     <h5 class="card-title">Our Devices</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">These are devices in our house:</h6>
+                    <h6 class="card-subtitle mb-2 text-muted">Electronic devices in our home</h6>
                     <div id="device-buttons" class="col"></div>
-                </div>
+                </div> 
             </div>
         </div>
         <!-- Detected Devices Section -->
         <div class="col-md-6" id="device-info">
-            <div class="card">
+            <div class="card" id="detected-device-card">
                 <div class="card-body">
-                    <h5 class="card-title">Detected Devices</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">Status of devices detected by usage model:</h6>
+                    <h5 class="card-title">AI Detected Devices</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Status of devices currently detected by our AI-powered usage model.</h6>
                     <div id="device-icons" class="col"></div>
                 </div>
             </div>
         </div>
+    </div>  
+    <div class="col-2">
+        <div class="card">
+            <!-- make the button light grey -->
+            <button id="show-devices" class="btn btn-primary">Show Detected Devices</button>
+        </div>
     </div>
-
     <!-- Power Usage Chart Section -->
     <div class="card" style="margin: 20px;">
-        <div style="height: 200px;">
+        <div style="height: 300px;">
             <h5 class="card-title">Power Usage Chart</h5>
-            <h6 class="card-subtitle mb-2 text-muted">See the power usage over time:</h6>
+            <h6 class="card-subtitle mb-2 text-muted">Realtime household power usage:</h6>
             <canvas id="power-chart" class="col"></canvas>
         </div>
     </div>
@@ -75,139 +77,139 @@
     <footer>
     </footer>
     <script>
-    const devices = ['Light', 'Fridge', 'TV', 'Oven'];
-    const chartData = {
-      labels: [],
-      datasets: [{
-        label: 'Combined Power Usage (Watts)',
-        data: [],
-        borderColor: 'blue',
-        fill: false
-      }]
-    };
-
-    let chart;
-
-    // Create device icons
-    const deviceIconsContainer = document.getElementById('device-icons');
-    devices.forEach(device => {
-      const icon = document.createElement('img');
-      icon.src = `${device.toLowerCase()}.png`;
-      icon.alt = device;
-      icon.classList.add('device-icon');
-      icon.id = `icon-${device}`;
-      deviceIconsContainer.appendChild(icon);
-    });
-
-    // Create device buttons
-    const deviceButtonsContainer = document.getElementById('device-buttons');
-    devices.forEach(device => {
-      const button = document.createElement('button');
-      button.textContent = device;
-      button.classList.add('btn', 'device-button', 'btn-primary', 'm-2'); // Bootstrap classes
-
-      button.addEventListener('click', () => {
-        toggleDevice(device);
-      });
-      deviceButtonsContainer.appendChild(button);
-    });
-
-    // Initialize chart
-    window.onload = function() {
-      const ctx = document.getElementById('power-chart').getContext('2d');
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: {
-          responsive: false,
-          title: {
-            display: true,
-            text: 'Combined Power Usage'
-          },
-          scales: {
-            xAxes: [{
-              display: true,
-              scaleLabel: {
-                display: true,
-                labelString: 'Time (seconds)'
-              }
-            }],
-            yAxes: [{
-              display: true,
-              scaleLabel: {
-                display: true,
-                labelString: 'Power (Watts)'
-              }
+        const devices = ['Light', 'Fridge', 'TV', 'Oven'];
+        const chartData = {
+            labels: [],
+            datasets: [{
+                label: 'Combined Power Usage (Watts)',
+                data: [],
+                borderColor: 'blue',
+                fill: false
             }]
-          }
-        }
-      });
-      fetchData();
-      setInterval(fetchData, 1000);
-    };
+        };
 
-    // Fetch data from the server
-    function fetchData() {
-      fetch('http://localhost:5000/state')
-        .then(response => response.json())
-        .then(data => {
-          updateChart(data.combined_load);
-          updateDetectedDevices(data.detected_devices);
+        let chart;
+
+        // Create device icons
+        const deviceIconsContainer = document.getElementById('device-icons');
+        devices.forEach(device => {
+            const icon = document.createElement('img');
+            icon.src = `${device.toLowerCase()}.png`;
+            icon.alt = device;
+            icon.classList.add('device-icon');
+            icon.id = `icon-${device}`;
+            deviceIconsContainer.appendChild(icon);
         });
-    }
 
-    // Update chart with new data
-    function updateChart(combinedLoad) {
-      const currentTime = new Date().getSeconds();
-      chartData.labels.push(currentTime);
-      chartData.datasets[0].data.push(combinedLoad);
+        // Create device buttons
+        const deviceButtonsContainer = document.getElementById('device-buttons');
+        devices.forEach(device => {
+            const button = document.createElement('button');
+            button.textContent = device;
+            button.classList.add('btn', 'device-button', 'btn-primary', 'm-2'); // Bootstrap classes
 
-      if (chartData.labels.length > 30) {
-        chartData.labels.shift();
-        chartData.datasets[0].data.shift();
-      }
-
-      chart.update();
-    }
-
-    // Update detected devices
-    function updateDetectedDevices(detectedDevices) {
-      devices.forEach(device => {
-        const icon = document.getElementById(`icon-${device}`);
-        if (detectedDevices.includes(device)) {
-          icon.classList.add('active');
-        } else {
-          icon.classList.remove('active');
-        }
-      });
-    }
-
-    // Toggle device on/off
-    function toggleDevice(device) {
-      const icon = document.getElementById(`icon-${device}`);
-      const isOn = icon.classList.contains('active');
-
-      const url = isOn ? `http://localhost:5000/devices/${device}/off` : `http://localhost:5000/devices/${device}/on`;
-      const method = isOn ? 'GET' : 'GET';
-
-      fetch(url, { method })
-        .then(response => {
-          if (response.ok) {
-            icon.classList.toggle('active');
-          } else {
-            console.error(`Error toggling device ${device}`);
-          }
-        })
-        .catch(error => {
-          console.error(`Error toggling device ${device}:`, error);
+            button.addEventListener('click', () => {
+                toggleDevice(device);
+            });
+            deviceButtonsContainer.appendChild(button);
         });
-    }
 
-    // Add event listener to show devices button
-    document.getElementById('show-devices').addEventListener('click', function() {
-      const deviceInfo = document.getElementById('device-info');
-      deviceInfo.classList.toggle('hidden');
-    });
+        // Initialize chart
+        window.onload = function () {
+            const ctx = document.getElementById('power-chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: false,
+                    title: {
+                        display: true,
+                        text: 'Combined Power Usage'
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Time (seconds)'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Power (Watts)'
+                            }
+                        }]
+                    }
+                }
+            });
+            fetchData();
+            setInterval(fetchData, 1000);
+        };
+
+        // Fetch data from the server
+        function fetchData() {
+            fetch('http://localhost:5000/state')
+                .then(response => response.json())
+                .then(data => {
+                    updateChart(data.combined_load);
+                    updateDetectedDevices(data.detected_devices);
+                });
+        }
+
+        // Update chart with new data
+        function updateChart(combinedLoad) {
+            const currentTime = new Date().getSeconds();
+            chartData.labels.push(currentTime);
+            chartData.datasets[0].data.push(combinedLoad);
+
+            if (chartData.labels.length > 30) {
+                chartData.labels.shift();
+                chartData.datasets[0].data.shift();
+            }
+
+            chart.update();
+        }
+
+        // Update detected devices
+        function updateDetectedDevices(detectedDevices) {
+            devices.forEach(device => {
+                const icon = document.getElementById(`icon-${device}`);
+                if (detectedDevices.includes(device)) {
+                    icon.classList.add('active');
+                } else {
+                    icon.classList.remove('active');
+                }
+            });
+        }
+
+        // Toggle device on/off
+        function toggleDevice(device) {
+            const icon = document.getElementById(`icon-${device}`);
+            const isOn = icon.classList.contains('active');
+
+            const url = isOn ? `http://localhost:5000/devices/${device}/off` : `http://localhost:5000/devices/${device}/on`;
+            const method = isOn ? 'GET' : 'GET';
+
+            fetch(url, { method })
+                .then(response => {
+                    if (response.ok) {
+                        icon.classList.toggle('active');
+                    } else {
+                        console.error(`Error toggling device ${device}`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Error toggling device ${device}:`, error);
+                });
+        }
+
+        // Add event listener to show devices button
+        document.getElementById('show-devices').addEventListener('click', function () {
+            const deviceInfo = document.getElementById('device-info');
+            deviceInfo.classList.toggle('hidden');
+        });
 
     </script>
 </body>

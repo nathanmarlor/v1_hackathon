@@ -9,14 +9,18 @@
 }
 #power-chart {
     width: 100% !important;
-    height: 100% !important;
+    height: 300px !important; /* Adjust the height as needed */
 }
 
 #device-controls {
     height: 20vh; /* 20% of the viewport height */
 }
 
-#device-info,
+#device-info {
+    height: auto; /* Adjust this value as needed */
+    overflow: auto; /* This will allow the div to expand vertically as needed */
+}
+
 #power-chart-section,
 #device-controls {
     overflow: auto; /* add scrollbars if the content overflows */
@@ -24,4 +28,26 @@
 
 .hidden {
     display: none;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.col-md-6 {
+    display: flex;
+    flex: 1; /* Make sure columns take up equal space */
+}
+
+.card {
+    width: 100%; /* Ensure the card stretches to fill the column */
+    display: flex;
+    flex-direction: column; /* This makes sure the card's content aligns vertically */
+}
+
+.card-body {
+    flex-grow: 1; /* Allows the card-body to expand and push the footer down */
 }
